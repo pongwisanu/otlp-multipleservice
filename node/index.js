@@ -36,10 +36,8 @@ app.get("/ping", async (req, res) => {
             const headers = {};
             propagation.inject(context.active(), headers);
 
-            const data = await axios.get("http://localhost:8000/pong", { headers });
+            const data = await axios.get("http://localhost:5000/pong", { headers });
 
-            console.log(data.data)
-            
             span.end();
             res.send("Hello from Service A");
         });

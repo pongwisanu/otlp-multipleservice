@@ -22,15 +22,6 @@ app = Flask(__name__)
 @app.route("/pong", methods=["GET"])
 def pong():
     headers = dict(request.headers)
-    print(f"Received headers: {headers}")
-    carrier ={'traceparent': headers['Traceparent']}
-    ctx = TraceContextTextMapPropagator().extract(carrier=carrier)
-    print(f"Received context: {ctx}")
-
-    # b2 ={'baggage': headers['Baggage']}
-    # ctx2 = W3CBaggagePropagator().extract(b2, context=ctx)
-    # print(f"Received context2: {ctx2}")
-    
-    # Start a new span
+    ctx = TraceContextTextMapPropagator().extract(carrier=headers)
     with tracer.start_span("service-b", context=ctx):  
         return {"message": "Hello from Service B"}
