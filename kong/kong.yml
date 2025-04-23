@@ -2,12 +2,38 @@ _format_version: "3.0"
 _transform: true
 
 services:
-  - host: httpbin.konghq.com
-    name: example_service
-    port: 80
+  - host: node
+    name: Node-ServiceA
+    port: 3000
     protocol: http
+    path: /
     routes:
-      - name: example_route
+      - name: node-serviceA-route
         paths:
-          - /mock
+          - /node
+        methods:
+          - GET
+          - POST
         strip_path: true
+        preserve_host: true
+  - host: python
+    name: Python-ServiceB
+    port: 5000
+    protocol: http
+    path: /
+    routes:
+      - name: python-serviceB-route
+        paths:
+          - /python
+        methods:
+          - GET
+          - POST
+        strip_path: true
+        preserve_host: true
+
+# plugins:
+#   - name: opentelemetry
+#     config:
+#       traces_endpoint: http://otel:4318/v1/traces
+#       resource_attributes:
+#         service.name: kong-gateway

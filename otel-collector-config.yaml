@@ -9,6 +9,9 @@ receivers:
 extensions:
   health_check: {}
 
+processors:
+  batch:
+
 exporters:
   otlp:
     endpoint: jaeger:4317
@@ -20,4 +23,5 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
+      processors: [batch]
       exporters: [otlp, debug]

@@ -10,7 +10,7 @@ services:
       - COLLECOTR_ZIPKIN_HOST_PORT=:9411
     networks:
       - otlp
-  otel-collector:
+  otel:
     image: otel/opentelemetry-collector:latest
     volumes:
       - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
@@ -42,5 +42,26 @@ services:
       - 8004:8004
     volumes:
       - ./kong:/kong/declarative
+    networks:
+      - otlp
+  python:
+    build: python
+    environment:
+      - OTEL_COLLECTOR_URL=otel
+    # expose:
+    #   - 5000
+    ports:
+      - 5000:5000
+    networks:
+      - otlp
+  node:
+    build: node
+    environment:
+      - PYTHON_URL=http://python:5000
+      - OTEL_COLLECTOR_URL=otel
+    # expose:
+    #   - 3000
+    ports:
+      - 3000:3000
     networks:
       - otlp
