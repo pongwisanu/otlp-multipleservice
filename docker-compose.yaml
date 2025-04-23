@@ -44,24 +44,29 @@ services:
       - ./kong:/kong/declarative
     networks:
       - otlp
-  python:
-    build: python
-    environment:
-      - OTEL_COLLECTOR_URL=otel
-    # expose:
-    #   - 5000
-    ports:
-      - 5000:5000
-    networks:
-      - otlp
   node:
     build: node
     environment:
-      - PYTHON_URL=http://python:5000
+      - PYTHON_URL=http://python:4000
       - OTEL_COLLECTOR_URL=otel
-    # expose:
-    #   - 3000
-    ports:
-      - 3000:3000
+    expose:
+      - 3000
+    networks:
+      - otlp
+  python:
+    build: python
+    environment:
+      - GO_URL=http://go:5000
+      - OTEL_COLLECTOR_URL=otel
+    expose:
+      - 4000
+    networks:
+      - otlp
+  go:
+    build: go
+    environment:
+      - OTEL_COLLECTOR_URL=otel
+    expose:
+      - 5000
     networks:
       - otlp

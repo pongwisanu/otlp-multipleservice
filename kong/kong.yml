@@ -13,12 +13,11 @@ services:
           - /node
         methods:
           - GET
-          - POST
         strip_path: true
         preserve_host: true
   - host: python
     name: Python-ServiceB
-    port: 5000
+    port: 4000
     protocol: http
     path: /
     routes:
@@ -27,7 +26,19 @@ services:
           - /python
         methods:
           - GET
-          - POST
+        strip_path: true
+        preserve_host: true
+  - host: go
+    name: Go-ServiceC
+    port: 5000
+    protocol: http
+    path: /
+    routes:
+      - name: go-serviceC-route
+        paths:
+          - /go
+        methods:
+          - GET
         strip_path: true
         preserve_host: true
 

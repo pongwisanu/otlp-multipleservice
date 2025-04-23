@@ -5,12 +5,15 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
+from opentelemetry.trace import get_current_span
 from dotenv import load_dotenv
 import os
+import requests
 
 load_dotenv()
 
 OTEL_COLLECTOR_URL = os.getenv("OTEL_COLLECTOR_URL" , "localhost")
+GO_URL = os.getenv("GO_URL", "http://localhost:5000")
 
 resource = Resource.create(attributes={
     SERVICE_NAME: "service-python"
@@ -32,12 +35,11 @@ def index():
 @app.route("/pong", methods=["GET"])
 def pong():
     try:
-        headers = dict(request.headers)
-        carrier = headers
-        if('Traceparent' in headers):
-            carrier = {'traceparent': headers['Traceparent']}
-        ctx = TraceContextTextMapPropagator().extract(carrier=carrier)
-        with tracer.start_span("service-b", context=ctx):  
-            return {"message": "Hello from Service B"}
+        ctx = TraceContextTextMapPropagator().extract(carrier=request.headers)
+        with tracer.start_as_current_span("service-b", context=ctx):  
+            headers = {}
+            TraceContextTextMapPropagator().inject(headers)
+            res = requests.get(f"{GO_URL}/pang" , headers=headers).json()
+            return {"message": f"Hello from Service B and {res['message']}"}
     except Exception as e:
-        print(e , flush=True)
+        return {"message": e.args}

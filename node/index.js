@@ -10,8 +10,7 @@ const { resourceFromAttributes } = require("@opentelemetry/resources");
 const { ATTR_SERVICE_NAME } = require("@opentelemetry/semantic-conventions");
 
 OTEL_COLLECTOR_URL = process.env.OTEL_COLLECTOR_URL || "localhost"
-PYTHON_URL = process.env.PYTHON_URL || "localhost"
-PYTHON_PORT = process.env.PYTHON_PORT || "5000"
+PYTHON_URL = process.env.PYTHON_URL || "http://localhost:4000"
 
 const sdk = new NodeSDK({
     resource: resourceFromAttributes({
@@ -41,24 +40,20 @@ app.get("/", async (req, res) => {
 
 app.get("/ping", async (req, res) => {
     try {
-        // const isConnected = await checkConnection(sdk)
-        const isConnected = true
-        if (isConnected) {
-            const parentCtx = propagation.extract(context.active(), req.headers);
-            const span = tracer.startSpan("service-a", undefined, parentCtx);
+        const parentCtx = propagation.extract(context.active(), req.headers);
 
-            await context.with(trace.setSpan(parentCtx, span), async () => {
+        await context.with(parentCtx, async () => {
+            const span = tracer.startSpan("service-a");
+            await context.with(trace.setSpan(context.active(), span), async () => {
                 const headers = {};
                 propagation.inject(context.active(), headers);
-
                 const data = await axios.get(`${PYTHON_URL}/pong`, { headers });
-
                 span.end();
                 res.send({ message: `Hello from Service A and ${data.data.message}` });
-            });
-        }
+            })
+        });
     } catch (error) {
-        res.send(error.cause)
+        res.send({ message: error.cause })
     }
 });
 
